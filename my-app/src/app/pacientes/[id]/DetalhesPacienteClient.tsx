@@ -27,7 +27,6 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
   const [anexos, setAnexos] = useState<string[]>([]);
   const [file, setFile] = useState<File | null>(null);
 
-  // Buscar paciente
   const fetchPaciente = async () => {
     try {
       const res = await fetch(`/api/pacientes`);
@@ -40,7 +39,6 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
     }
   };
 
-  // Buscar anexos
   const fetchAnexos = async () => {
     try {
       const res = await fetch(`/api/pacientes/${pacienteId}/anexos`);
@@ -58,7 +56,6 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
 
   if (!paciente || !form) return <p>Carregando paciente...</p>;
 
-  // Handlers
   const handleChange = (key: keyof Paciente, value: string) => {
     setForm({ ...form, [key]: value });
   };
@@ -78,15 +75,13 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
     }
   };
 
-  const handleCancel = () => {
-    setForm(paciente);
-  };
+  const handleCancel = () => setForm(paciente);
 
   const handleDelete = async () => {
     if (!confirm("Deseja realmente excluir este paciente?")) return;
     try {
       await fetch(`/api/pacientes/${pacienteId}`, { method: "DELETE" });
-      alert("Paciente excluído com sucesso!");
+      alert("Paciente excluído!");
       window.location.href = "/";
     } catch (err) {
       console.error(err);
@@ -102,7 +97,7 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
       await fetch(`/api/pacientes/${pacienteId}/anexos`, { method: "POST", body: formData });
       setFile(null);
       fetchAnexos();
-      alert("Arquivo enviado com sucesso!");
+      alert("Arquivo enviado!");
     } catch (err) {
       console.error(err);
       alert("Erro ao enviar arquivo.");
@@ -113,95 +108,16 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
     <div className={styles.wrapper}>
       <h2 className={styles.heading}>Editar Paciente</h2>
 
-      <label>
-        Nome:
-        <input
-          type="text"
-          value={form.nome}
-          onChange={(e) => handleChange("nome", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Data Nascimento:
-        <input
-          type="date"
-          value={form.dataNascimento || ""}
-          onChange={(e) => handleChange("dataNascimento", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Telefone:
-        <input
-          type="tel"
-          value={form.telefone || ""}
-          onChange={(e) => handleChange("telefone", e.target.value)}
-        />
-      </label>
-
-      <label>
-        CEP:
-        <input
-          type="text"
-          value={form.cep || ""}
-          onChange={(e) => handleChange("cep", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Logradouro:
-        <input
-          type="text"
-          value={form.logradouro || ""}
-          onChange={(e) => handleChange("logradouro", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Número:
-        <input
-          type="text"
-          value={form.numero || ""}
-          onChange={(e) => handleChange("numero", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Complemento:
-        <input
-          type="text"
-          value={form.complemento || ""}
-          onChange={(e) => handleChange("complemento", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Bairro:
-        <input
-          type="text"
-          value={form.bairro || ""}
-          onChange={(e) => handleChange("bairro", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Cidade:
-        <input
-          type="text"
-          value={form.cidade || ""}
-          onChange={(e) => handleChange("cidade", e.target.value)}
-        />
-      </label>
-
-      <label>
-        Estado:
-        <input
-          type="text"
-          value={form.estado || ""}
-          onChange={(e) => handleChange("estado", e.target.value)}
-        />
-      </label>
+      {["nome","dataNascimento","telefone","cep","logradouro","numero","complemento","bairro","cidade","estado"].map((field) => (
+        <label key={field}>
+          {field.charAt(0).toUpperCase() + field.slice(1)}:
+          <input
+            type={field === "dataNascimento" ? "date" : "text"}
+            value={form[field as keyof Paciente] || ""}
+            onChange={(e) => handleChange(field as keyof Paciente, e.target.value)}
+          />
+        </label>
+      ))}
 
       <div className={styles.actions}>
         <button className={styles.save} onClick={handleSave}>Salvar</button>
@@ -216,7 +132,15 @@ export default function DetalhesPacienteClient({ pacienteId }: Props) {
         <button className={styles.upload} onClick={handleFileUpload}>Adicionar Arquivo</button>
         <ul className={styles.lista}>
           {anexos.map((a) => (
-            <li className={styles.item} key={a}>{a}</li>
+            <li key={a} className={styles.item}>
+              <a
+                href={`/api/pacientes/${pacienteId}/anexos/${encodeURIComponent(a)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {a}
+              </a>
+            </li>
           ))}
         </ul>
       </div>
