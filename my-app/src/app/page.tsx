@@ -1,25 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import prisma from "@/lib/data";
 import Link from "next/link";
 import styles from "./styles/Page.module.css";
 
-export default function HomePage() {
-  const [pacientes, setPacientes] = useState([]);
-
-  const fetchPacientes = async () => {
-    try {
-      const res = await fetch("/api/pacientes");
-      const data = await res.json();
-      setPacientes(data);
-    } catch (err) {
-      console.error("Erro ao buscar pacientes:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchPacientes();
-  }, []);
+export default async function HomePage() {
+  const pacientes = await prisma.paciente.findMany({ orderBy: { nome: "asc" } });
 
   return (
     <div className={styles.wrapper}>
@@ -30,27 +14,26 @@ export default function HomePage() {
       </Link>
 
       <div className={styles.cards}>
-        {pacientes.length === 0 ? (
-          <p>Nenhum paciente cadastrado.</p>
-        ) : (
-          pacientes.map((p) => (
-            <div key={p.id} className={styles.card}>
-              <h3>{p.nome}</h3>
-              <p>Nascimento: {p.dataNascimento || "-"}</p>
-              <p>Telefone: {p.telefone || "-"}</p>
-              <p>Endereço: {p.logradouro ? `${p.logradouro}, ${p.numero || "-"} ${p.complemento || ""}, ${p.bairro || ""}, ${p.cidade || ""} - ${p.estado || ""}` : "-"}</p>
-              <div className={styles.actions}>
-                <Link href={`/pacientes/${p.id}`} className={styles.detail}>
-                  Ver Detalhes
-                </Link>
-                <Link href={`/pacientes/${p.id}`} className={styles.detail}>
-                  Editar
-                </Link>
-              </div>
+        {pacientes.map((p) => (
+          <div key={p.id} className={styles.card}>
+            <h3>{p.nome}</h3>
+            <p>Nascimento: {p.dataNascimento || "-"}</p>
+            <p>Telefone: {p.telefone || "-"}</p>
+            <div className={styles.actions}>
+              <Link href={`/pacientes/${p.id}`} className={styles.detail}>
+                Ver Detalhes
+              </Link>
+              <Link href={`/pacientes/${p.id}`} className={styles.detail}>
+                Editar
+              </Link>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
+
+      <footer className={styles.footer}>
+        © 2025 - Personaliza Medic
+      </footer>
     </div>
   );
 }
